@@ -1,5 +1,3 @@
-# This repository is no longer maintained. All further development moves to [queil/ring-vscode](https://github.com/queil/ring-vscode).
-
 # ring-vscode
 
 Ring-VsCode is an extension for [ring!](https://github.com/AccountTechnologies/ring) - a service launcher and monitor designed to help teams during the transition from the legacy into the cloud.
