@@ -4,11 +4,11 @@ import {detailsKeys} from './detailsKeys'
 
 export interface IRunnableInfo
 {
-    id:string;
-    type:string;
-    declaredIn:string[];
-    state:RunnableState;
-    details: { [index:string]:any };
+    Id:string;
+    Type:string;
+    DeclaredIn:string[];
+    State:RunnableState;
+    Details: { [index:string]:any };
 }
 
 export type ServerState = 'UNKNOWN' | 'IDLE' | 'LOADED' | 'RUNNING';
@@ -16,12 +16,12 @@ export type WorkspaceState = 'UNKNOWN' | 'IDLE' | 'HEALTHY' | 'DEGRADED';
 export type RunnableState =  'ZERO' | 'INITIATED' | 'STARTED' | 'HEALTH_CHECK' | 'HEALTHY' |  'DEAD' | 'RECOVERING';
 
 export interface IWorkspaceInfo {
-    path:string;
-    runnables:IRunnableInfo[];
-    flavours:string[];
-    currentFlavour: string;
-    serverState: ServerState;
-    workspaceState:  WorkspaceState;
+    Path:string;
+    Runnables:IRunnableInfo[];
+    Flavours:string[];
+    CurrentFlavour: string;
+    ServerState: ServerState;
+    WorkspaceState:  WorkspaceState;
 }
 
 export class WorkspaceNode extends vscode.TreeItem {
@@ -32,12 +32,12 @@ export class WorkspaceNode extends vscode.TreeItem {
                 protected context:vscode.ExtensionContext
                 )
     {
-        super(workspaceInfo.path);
+        super(workspaceInfo.Path);
         super.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
         this.contextValue = "ring.workspace";
-        this.iconPath = WorkspaceNode.getIconPath(workspaceInfo.workspaceState, context);
-        this.children = workspaceInfo.runnables.map(r => new RunnableNode(r, context));
-        this.id = workspaceInfo.path;
+        this.iconPath = WorkspaceNode.getIconPath(workspaceInfo.WorkspaceState, context);
+        this.children = workspaceInfo.Runnables.map(r => new RunnableNode(r, context));
+        this.id = workspaceInfo.Path;
     }
 
     static getIconPath(state:WorkspaceState, context:vscode.ExtensionContext)
@@ -54,13 +54,13 @@ export class RunnableNode extends vscode.TreeItem {
 
     public id:string;
     constructor(public runnable:IRunnableInfo, protected context:vscode.ExtensionContext) {
-        super(runnable.id);
+        super(runnable.Id);
         this.runnable = runnable;
-        this.label = `${runnable.details[detailsKeys.friendlyName] ?? runnable.id}`;
-        this.tooltip = `${runnable.id}`;
-        this.contextValue = "," + Object.keys(runnable.details).reduce((m, x) => m + "," + x, '') + ",";
-        this.iconPath = RunnableNode.getIconPath(context, runnable.state);
-        this.id = runnable.id;
+        this.label = `${runnable.Details[detailsKeys.friendlyName] ?? runnable.Id}`;
+        this.tooltip = `${runnable.Id}`;
+        this.contextValue = "," + Object.keys(runnable.Details).reduce((m, x) => m + "," + x, '') + ",";
+        this.iconPath = RunnableNode.getIconPath(context, runnable.State);
+        this.id = runnable.Id;
      }
      static getIconPath(context:vscode.ExtensionContext, State:RunnableState)
      {
@@ -84,7 +84,7 @@ export class WorkspaceProvider implements vscode.TreeDataProvider<RingNode> {
     readonly onDidChangeTreeData: vscode.Event<RingNode | null> = this._onDidChangeTreeData.event;
     private root:WorkspaceNode;
 
-    public static emptyWorkspace:IWorkspaceInfo = {runnables:[], flavours: [], currentFlavour: "", path:"Not loaded", serverState: 'UNKNOWN', workspaceState: 'UNKNOWN'}
+    public static emptyWorkspace:IWorkspaceInfo = {Runnables:[], Flavours: [], CurrentFlavour: "", Path:"Not loaded", ServerState: 'UNKNOWN', WorkspaceState: 'UNKNOWN'}
 
     constructor(private context: vscode.ExtensionContext)
     {
@@ -114,7 +114,7 @@ export class WorkspaceProvider implements vscode.TreeDataProvider<RingNode> {
         const r = this.getRunnable(id);
         if (!r) {return;}
 
-        r.runnable.state = state;
+        r.runnable.State = state;
         r.iconPath = RunnableNode.getIconPath(this.context, state);
         this._onDidChangeTreeData.fire(r);
     }
