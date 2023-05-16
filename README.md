@@ -1,6 +1,6 @@
 # ring-vscode
 
-Ring-VsCode is an extension for [ring!](https://github.com/AccountTechnologies/ring) - a service launcher and monitor designed to help teams during the transition from the legacy into the cloud.
+Ring-VsCode is an extension for [ring!](https://github.com/queil/ring) - a meta-orchestrator for developers.
 
 ## Features
 
@@ -14,7 +14,6 @@ It requires the latest version of the [ring! dotnet cli tool](https://www.nuget.
 
 ring.serverUrl: ws://localhost:7999/ws
 
-## Known Issues
+## Status
 
-* The extension does not start Ring automatically yet
-* Does not support debugging yet
+This is functional but still experimental/unstable.
