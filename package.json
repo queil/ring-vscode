@@ -2,7 +2,7 @@
   "name": "ring-vsce",
   "displayName": "ring!",
   "description": "",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "icon": "media/ring.128.png",
   "publisher": "queil",
   "license": "Apache-2.0",
