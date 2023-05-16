@@ -1,8 +1,8 @@
 {
   "name": "ring-vsce",
-  "displayName": "ring!",
+  "displayName": "ring",
   "description": "",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "icon": "media/ring.128.png",
   "publisher": "queil",
   "license": "Apache-2.0",
