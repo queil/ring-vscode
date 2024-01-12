@@ -180,6 +180,21 @@ export async function activate(context: vscode.ExtensionContext) {
 
   }));
 
+
+  context.subscriptions.push(vscode.commands.registerCommand('ring.runTask', async (ctx: model.RunnableNode) => {
+
+    async function browseTo(r: model.IRunnableInfo) {
+      
+      const id = await vscode.window.showQuickPick(r.Tasks);
+      if (!id) { return; }
+      await sendMessage(M.RUNNABLE_EXECUTE_TASK, JSON.stringify({RunnableId: r.Id, TaskId: id}))
+      
+    }
+
+    await contextOrFromPickList(browseTo, ctx);
+
+  }));
+
   context.subscriptions.push(vscode.commands.registerCommand('ring.debugRunnable', async (ctx: model.RunnableNode) => {
 
     const folders = vscode.workspace.workspaceFolders;
@@ -328,7 +343,7 @@ export async function activate(context: vscode.ExtensionContext) {
     globalSocket.send(String.fromCharCode(message) + payload);
   }
 
-  async function dispatch(message: M, payload: string) {
+  async function dispatch(message: M, payload: Buffer) {
     let m = M[message];
 
     channel.appendLine(m + " " + payload);
@@ -363,7 +378,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       case M.WORKSPACE_INFO_PUBLISH:
 
-        wsModel.updateWorkspace(<model.IWorkspaceInfo>JSON.parse(payload));
+        wsModel.updateWorkspace(<model.IWorkspaceInfo>JSON. parse(payload.toString()));
 
         const healthy = "#00dd00";
         const degraded = "#ff8800";
@@ -371,7 +386,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
         wsStatus.color =
           wsModel.current().WorkspaceState === 'HEALTHY' ? healthy :
-            wsModel.current().WorkspaceState === 'DEGRADED' ? degraded : stopped;
+          wsModel.current().WorkspaceState === 'DEGRADED' ? degraded : stopped;
 
         wsStatus.tooltip = wsModel.current().WorkspaceState.toString();
 
@@ -379,7 +394,7 @@ export async function activate(context: vscode.ExtensionContext) {
       case M.RUNNABLE_UNRECOVERABLE:
         {
           const runnableId = payload.toString();
-          wsModel.updateRunnable(payload, 'DEAD');
+          wsModel.updateRunnable(runnableId, 'DEAD');
           vscode.window.showWarningMessage(`Runnable dead: ${runnableId}`, "Restart");
           break;
         }
@@ -420,6 +435,10 @@ export async function activate(context: vscode.ExtensionContext) {
           wsModel.updateRunnable(runnableId, 'ZERO');
           break;
         }
+      case M.ACK:
+        const b = payload[0]
+        const ack = Ack[b]
+        vscode.window.showInformationMessage(`ACK: ${ack}`);
       default:
         break;
     }
@@ -432,7 +451,6 @@ export async function activate(context: vscode.ExtensionContext) {
         globalSocket.terminate();
       }
 
-
       const config = vscode.workspace.getConfiguration('ring');
 
       let url = config.get<string>("serverUrl");
@@ -443,8 +461,8 @@ export async function activate(context: vscode.ExtensionContext) {
       globalSocket = new WebSocket(url);
 
       globalSocket.onmessage = async e => {
-        let msg = <string>e.data;
-        await dispatch(parseInt(msg[0]), msg.slice(1));
+        let msg = <Buffer>e.data;
+        await dispatch(msg[0], msg.slice(1));
       };
 
       globalSocket.onopen = e => {
@@ -510,7 +528,7 @@ enum M {
   RUNNABLE_INCLUDE = 43,
   INCLUDE_ALL = 44,
   RUNNABLE_EXCLUDE = 45,
-  EXCLUDE_ALL = 46,
+  RUNNABLE_EXECUTE_TASK = 46,
   ACK = 58,
   PING = 2,
   WORKSPACE_INFO_RQ = 63,
@@ -531,4 +549,17 @@ enum M {
   SERVER_IDLE = 22,
   SERVER_LOADED = 23,
   SERVER_RUNNING = 24
+}
+
+enum Ack {
+    None = 0,
+    Ok = 1,
+    ExpectedEndOfMessage = 2,
+    NotSupported = 3,
+    ServerError = 4,
+    Terminating = 5,
+    NotFound = 6,
+    Alive = 7,
+    TaskFailed = 8,
+    TaskOk = 9
 }

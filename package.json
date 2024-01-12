@@ -2,7 +2,7 @@
   "name": "ring-vsce",
   "displayName": "ring",
   "description": "",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "icon": "media/ring.128.png",
   "publisher": "queil",
   "license": "Apache-2.0",
@@ -96,6 +96,10 @@
         "title": "Ring: Runnable - Pick PID"
       },
       {
+        "command": "ring.runTask",
+        "title": "Ring: Run Task"
+      },
+      {
         "command": "ring.debugRunnable",
         "title": "Ring: Runnable - Debug ",
         "enablement": "view == runnables"
@@ -163,6 +167,10 @@
           "command": "ring.openTerminal"
         },
         {
+          "when": "view == runnables",
+          "command": "ring.runTask"
+        },
+        {
           "when": "view == runnables && false",
           "command": "ring.debugRunnable"
         }
@@ -203,6 +211,7 @@
     "@types/ws": "^7.4.0",
     "bufferutil": "^4.0.1",
     "guid-typescript": "^1.0.9",
+    "minimist": "^1.2.5",
     "utf-8-validate": "^5.0.2",
     "vscode-test": "^1.6.1",
     "ws": "^8.8.1"

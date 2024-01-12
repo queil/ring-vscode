@@ -9,6 +9,7 @@ export interface IRunnableInfo
     DeclaredIn:string[];
     State:RunnableState;
     Details: { [index:string]:any };
+    Tasks: string[];
 }
 
 export type ServerState = 'UNKNOWN' | 'IDLE' | 'LOADED' | 'RUNNING';
