@@ -7,20 +7,20 @@ trigger:
 strategy:
   matrix:
     linux:
-      imageName: 'ubuntu-22.04'
+      imageName: 'ubuntu-latest'
     mac:
-      imageName: 'macOS-12'
+      imageName: 'macOS-latest'
     windows:
-      imageName: 'windows-2022'
+      imageName: 'windows-latest'
 
 pool:
   vmImage: $(imageName)
 
-steps:
 
+steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '16.x'
+    versionSpec: '20.x'
   displayName: 'Install Node.js'
 
 - bash: |
@@ -31,27 +31,31 @@ steps:
 
 - bash: |
     echo ">>> Compile vscode-test"
-    yarn && yarn compile
+    corepack enable
+    pnpm install
+    pnpm compile
     echo ">>> Compiled vscode-test"
     cd sample
     echo ">>> Run sample integration test"
-    yarn && yarn compile && yarn test
+    pnpm install
+    pnpm compile
+    pnpm test
   displayName: Run Tests
   env:
     DISPLAY: ':99.0'
 
 - bash: |
-    echo ">>> Instal vsce"
-    yarn add vsce --dev
+    echo ">>> Install @vscode/vsce"
+    pnpm add -D @vscode/vsce
     echo ">>> Publish"
-    yarn deploy -p $(VSCODE_MARKETPLACE_TOKEN)
+    pnpm deploy -p $(VSCODE_MARKETPLACE_TOKEN)
   displayName: Publish
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(contains(variables['Build.SourceBranch'], '-')), eq(variables['Agent.OS'], 'Linux'))
 
 - bash: |
-    echo ">>> Instal vsce"
-    yarn add vsce --dev
+    echo ">>> Install @vscode/vsce"
+    pnpm add -D @vscode/vsce
     echo ">>> Publish pre-release"
-    yarn deploy-prerelease -p $(VSCODE_MARKETPLACE_TOKEN)
+    pnpm deploy-prerelease -p $(VSCODE_MARKETPLACE_TOKEN)
   displayName: Publish pre-release
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), contains(variables['Build.SourceBranch'], '-'), eq(variables['Agent.OS'], 'Linux'))

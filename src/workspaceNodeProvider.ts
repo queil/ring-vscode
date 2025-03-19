@@ -33,8 +33,7 @@ export class WorkspaceNode extends vscode.TreeItem {
                 protected context:vscode.ExtensionContext
                 )
     {
-        super(workspaceInfo.Path);
-        super.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+        super(workspaceInfo.Path, vscode.TreeItemCollapsibleState.Expanded);
         this.contextValue = "ring.workspace";
         this.iconPath = WorkspaceNode.getIconPath(workspaceInfo.WorkspaceState, context);
         this.children = workspaceInfo.Runnables.map(r => new RunnableNode(r, context));
