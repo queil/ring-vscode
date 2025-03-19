@@ -31,7 +31,7 @@ steps:
 
 - bash: |
     echo ">>> Compile vscode-test"
-    corepack enable
+    npm install -g pnpm@latest
     pnpm install
     pnpm compile
     echo ">>> Compiled vscode-test"
@@ -39,7 +39,7 @@ steps:
     echo ">>> Run sample integration test"
     pnpm install
     pnpm compile
-    pnpm test
+    NODE_OPTIONS="--no-deprecation" pnpm test
   displayName: Run Tests
   env:
     DISPLAY: ':99.0'
