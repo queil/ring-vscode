@@ -1,1 +1,2 @@
 image: mcr.microsoft.com/devcontainers/typescript-node:22
+home_from_image: ghcr.io/queil/image:latest
