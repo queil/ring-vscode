@@ -62,6 +62,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     async function restart(r: model.IRunnableInfo) {
       sendMessage(M.RUNNABLE_EXCLUDE, r.Id);
+      await new Promise(resolve => setTimeout(resolve, 1000));
       sendMessage(M.RUNNABLE_INCLUDE, r.Id);
     }
 
@@ -104,27 +105,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
     await contextOrFromPickList(revealInExplorer, ctx);
 
-  }));
-
-  context.subscriptions.push(vscode.commands.registerCommand('ring.revealInOctant', async (ctx: model.RunnableNode) => {
-
-    async function browseTo(r: model.IRunnableInfo) {
-      const namespacedPods = r.Details[detailsKeys.pods] as string;
-
-      if (namespacedPods) {
-        let namespacedPod = namespacedPods.split("|")[0];
-        let chunks = namespacedPod.split("/")
-        let ns = chunks[0]
-        let pod = chunks[1]
-        const config = vscode.workspace.getConfiguration('ring');
-
-        let octantUrl = config.get<string>("octantUrl");
-        await vscode.env.openExternal(vscode.Uri.parse(`${octantUrl}/#/overview/namespace/${ns}/workloads/pods/${pod}`));
-
-      }
-    }
-
-    await contextOrFromPickList(browseTo, ctx);
   }));
 
   context.subscriptions.push(vscode.commands.registerCommand('ring.openFolder', async (ctx: model.RunnableNode) => {
