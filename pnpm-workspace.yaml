@@ -1,0 +1,9 @@
+packages:
+  - .
+
+onlyBuiltDependencies:
+  - '@vscode/vsce-sign'
+  - bufferutil
+  - esbuild
+  - keytar
+  - utf-8-validate
