@@ -48,7 +48,7 @@ steps:
     echo ">>> Install @vscode/vsce"
     pnpm add -D @vscode/vsce
     echo ">>> Publish"
-    pnpm deploy -p $(VSCODE_MARKETPLACE_TOKEN)
+    pnpm run deploy -p $(VSCODE_MARKETPLACE_TOKEN)
   displayName: Publish
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(contains(variables['Build.SourceBranch'], '-')), eq(variables['Agent.OS'], 'Linux'))
 
@@ -56,6 +56,6 @@ steps:
     echo ">>> Install @vscode/vsce"
     pnpm add -D @vscode/vsce
     echo ">>> Publish pre-release"
-    pnpm deploy-prerelease -p $(VSCODE_MARKETPLACE_TOKEN)
+    pnpm run deploy-prerelease -p $(VSCODE_MARKETPLACE_TOKEN)
   displayName: Publish pre-release
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), contains(variables['Build.SourceBranch'], '-'), eq(variables['Agent.OS'], 'Linux'))
