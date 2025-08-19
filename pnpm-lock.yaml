@@ -21,7 +21,7 @@ importers:
         specifier: ^1.0.9
         version: 1.0.9
       minimist:
-        specifier: ^1.2.8
+        specifier: ^1.2.5
         version: 1.2.8
       utf-8-validate:
         specifier: ^6.0.5
