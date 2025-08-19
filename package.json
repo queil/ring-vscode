@@ -186,17 +186,17 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "vscode:prepublish": "yarn run esbuild-base --minify",
     "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
     "esbuild": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node --sourcemap",
     "esbuild-watch": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node --sourcemap --watch",
     "compile": "tsc -p ./",
     "lint": "eslint . --ext .ts,.tsx",
     "watch": "tsc -watch -p ./",
-    "pretest": "pnpm run compile",
+    "pretest": "yarn run compile",
     "test": "node ./out/test/runTest.js",
-    "deploy": "vsce publish --no-dependencies",
-    "deploy-prerelease": "vsce publish --pre-release --no-dependencies"
+    "deploy": "vsce publish --no-yarn",
+    "deploy-prerelease": "vsce publish --pre-release --no-yarn"
   },
   "dependencies": {
     "@types/ws": "^8.18.1",
@@ -206,10 +206,8 @@
     "utf-8-validate": "^6.0.5",
     "ws": "^8.18.3"
   },
-  "resolutions": {
-    "minimist": "^1.2.5"
-  },
   "devDependencies": {
+    "@eslint/js": "^9.33.0",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.17.2",
@@ -221,8 +219,10 @@
     "esbuild": "^0.25.9",
     "eslint": "^9.33.0",
     "glob": "^11.0.3",
+    "globals": "^16.3.0",
     "mocha": "^11.7.1",
     "source-map-support": "^0.5.21",
     "typescript": "^5.9.2"
-  }
+  },
+  "packageManager": "yarn@4.9.2"
 }

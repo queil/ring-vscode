@@ -31,31 +31,31 @@ steps:
 
 - bash: |
     echo ">>> Compile vscode-test"
-    npm install -g pnpm@latest
-    pnpm install
-    pnpm compile
+    corepack enable
+    yarn install
+    yarn compile
     echo ">>> Compiled vscode-test"
     cd sample
     echo ">>> Run sample integration test"
-    pnpm install
-    pnpm compile
-    NODE_OPTIONS="--no-deprecation" pnpm test
+    yarn install
+    yarn compile
+    NODE_OPTIONS="--no-deprecation" yarn test
   displayName: Run Tests
   env:
     DISPLAY: ':99.0'
 
 - bash: |
     echo ">>> Install @vscode/vsce"
-    pnpm add -D @vscode/vsce
+    yarn add -D @vscode/vsce
     echo ">>> Publish"
-    pnpm run deploy -p $(VSCODE_MARKETPLACE_TOKEN)
+    yarn run deploy -p $(VSCODE_MARKETPLACE_TOKEN)
   displayName: Publish
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(contains(variables['Build.SourceBranch'], '-')), eq(variables['Agent.OS'], 'Linux'))
 
 - bash: |
     echo ">>> Install @vscode/vsce"
-    pnpm add -D @vscode/vsce
+    yarn add -D @vscode/vsce
     echo ">>> Publish pre-release"
-    pnpm run deploy-prerelease -p $(VSCODE_MARKETPLACE_TOKEN)
+    yarn run deploy-prerelease -p $(VSCODE_MARKETPLACE_TOKEN)
   displayName: Publish pre-release
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), contains(variables['Build.SourceBranch'], '-'), eq(variables['Agent.OS'], 'Linux'))
