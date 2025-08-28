@@ -12,28 +12,31 @@ module.exports = [
       parserOptions: {
         ecmaVersion: 2022,
         sourceType: 'module',
-        project: './tsconfig.json'
+        project: './tsconfig.json',
       },
       globals: {
         ...globals.node,
-        ...globals.es2022
-      }
+        ...globals.es2022,
+      },
     },
     plugins: {
-      '@typescript-eslint': typescript
+      '@typescript-eslint': typescript,
     },
     rules: {
       ...typescript.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['warn', { 
-        argsIgnorePattern: '^_|^e$|^token$',
-        varsIgnorePattern: '^_' 
-      }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_|^e$|^token$',
+          varsIgnorePattern: '^_',
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       'no-undef': 'off', // TypeScript handles this
       'no-case-declarations': 'off',
-      'no-fallthrough': 'off'
-    }
+      'no-fallthrough': 'off',
+    },
   },
   {
     ignores: [
@@ -42,7 +45,7 @@ module.exports = [
       '*.config.js',
       '.vscode-test/**',
       'node_modules/**',
-      '.yarn/**'
-    ]
-  }
+      '.yarn/**',
+    ],
+  },
 ];

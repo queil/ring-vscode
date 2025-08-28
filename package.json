@@ -2,7 +2,7 @@
   "name": "ring-vsce",
   "displayName": "ring",
   "description": "",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "icon": "media/ring.128.png",
   "publisher": "queil",
   "license": "Apache-2.0",
@@ -71,8 +71,12 @@
         "title": "Ring: Runnable - Open containing workspace"
       },
       {
+        "command": "ring.openDirInOs",
+        "title": "Ring: Runnable - Open dir in OS"
+      },
+      {
         "command": "ring.revealInExplorer",
-        "title": "Ring: Runnable - Reveal in explorer"
+        "title": "Ring: Runnable - Reveal in Explorer"
       },
       {
         "command": "ring.browseRunnable",
@@ -80,7 +84,7 @@
       },
       {
         "command": "ring.openFolder",
-        "title": "Ring: Runnable - Open folder in VS Code"
+        "title": "Ring: Runnable - Open dir in new window"
       },
       {
         "command": "ring.openTerminal",
@@ -143,6 +147,10 @@
         },
         {
           "when": "view == runnables && viewItem =~ /.*,workDir,.*/",
+          "command": "ring.openDirInOs"
+        },
+        {
+          "when": "view == runnables && viewItem =~ /.*,workDir,.*/",
           "command": "ring.revealInExplorer"
         },
         {
@@ -175,11 +183,6 @@
             "default": "ws://localhost:7999/ws",
             "type": "string",
             "description": "ring! server websocket url. Change it if you want to run ring! on a custom port"
-          },
-          "ring.octantUrl": {
-            "default": "http://127.0.0.1:7777",
-            "type": "string",
-            "description": "Octant Url"
           }
         }
       }
@@ -192,6 +195,8 @@
     "esbuild-watch": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node --sourcemap --watch",
     "compile": "tsc -p ./",
     "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile",
     "test": "node ./out/test/runTest.js",
@@ -221,6 +226,7 @@
     "glob": "^11.0.3",
     "globals": "^16.3.0",
     "mocha": "^11.7.1",
+    "prettier": "^3.6.2",
     "source-map-support": "^0.5.21",
     "typescript": "^5.9.2"
   },

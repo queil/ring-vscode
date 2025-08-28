@@ -16,46 +16,45 @@ strategy:
 pool:
   vmImage: $(imageName)
 
-
 steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '20.x'
-  displayName: 'Install Node.js'
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '20.x'
+    displayName: 'Install Node.js'
 
-- bash: |
-    /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-    echo ">>> Started xvfb"
-  displayName: Start xvfb
-  condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+  - bash: |
+      /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+      echo ">>> Started xvfb"
+    displayName: Start xvfb
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-- bash: |
-    echo ">>> Compile vscode-test"
-    corepack enable
-    yarn install
-    yarn compile
-    echo ">>> Compiled vscode-test"
-    cd sample
-    echo ">>> Run sample integration test"
-    yarn install
-    yarn compile
-    NODE_OPTIONS="--no-deprecation" yarn test
-  displayName: Run Tests
-  env:
-    DISPLAY: ':99.0'
+  - bash: |
+      echo ">>> Compile vscode-test"
+      corepack enable
+      yarn install
+      yarn compile
+      echo ">>> Compiled vscode-test"
+      cd sample
+      echo ">>> Run sample integration test"
+      yarn install
+      yarn compile
+      NODE_OPTIONS="--no-deprecation" yarn test
+    displayName: Run Tests
+    env:
+      DISPLAY: ':99.0'
 
-- bash: |
-    echo ">>> Install @vscode/vsce"
-    yarn add -D @vscode/vsce
-    echo ">>> Publish"
-    yarn run deploy -p $(VSCODE_MARKETPLACE_TOKEN)
-  displayName: Publish
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(contains(variables['Build.SourceBranch'], '-')), eq(variables['Agent.OS'], 'Linux'))
+  - bash: |
+      echo ">>> Install @vscode/vsce"
+      yarn add -D @vscode/vsce
+      echo ">>> Publish"
+      yarn run deploy -p $(VSCODE_MARKETPLACE_TOKEN)
+    displayName: Publish
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(contains(variables['Build.SourceBranch'], '-')), eq(variables['Agent.OS'], 'Linux'))
 
-- bash: |
-    echo ">>> Install @vscode/vsce"
-    yarn add -D @vscode/vsce
-    echo ">>> Publish pre-release"
-    yarn run deploy-prerelease -p $(VSCODE_MARKETPLACE_TOKEN)
-  displayName: Publish pre-release
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), contains(variables['Build.SourceBranch'], '-'), eq(variables['Agent.OS'], 'Linux'))
+  - bash: |
+      echo ">>> Install @vscode/vsce"
+      yarn add -D @vscode/vsce
+      echo ">>> Publish pre-release"
+      yarn run deploy-prerelease -p $(VSCODE_MARKETPLACE_TOKEN)
+    displayName: Publish pre-release
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), contains(variables['Build.SourceBranch'], '-'), eq(variables['Agent.OS'], 'Linux'))
