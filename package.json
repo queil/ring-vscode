@@ -2,7 +2,7 @@
   "name": "ring-vsce",
   "displayName": "ring",
   "description": "",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "icon": "media/ring.128.png",
   "publisher": "queil",
   "license": "Apache-2.0",
@@ -71,8 +71,12 @@
         "title": "Ring: Runnable - Open containing workspace"
       },
       {
-        "command": "ring.revealInOs",
-        "title": "Ring: Runnable - Reveal in OS"
+        "command": "ring.openDirInOs",
+        "title": "Ring: Runnable - Open dir in OS"
+      },
+      {
+        "command": "ring.revealInExplorer",
+        "title": "Ring: Runnable - Reveal in Explorer"
       },
       {
         "command": "ring.browseRunnable",
@@ -80,7 +84,7 @@
       },
       {
         "command": "ring.openFolder",
-        "title": "Ring: Runnable - Open folder in VS Code"
+        "title": "Ring: Runnable - Open dir in new window"
       },
       {
         "command": "ring.openTerminal",
@@ -143,7 +147,11 @@
         },
         {
           "when": "view == runnables && viewItem =~ /.*,workDir,.*/",
-          "command": "ring.revealInOs"
+          "command": "ring.openDirInOs"
+        },
+        {
+          "when": "view == runnables && viewItem =~ /.*,workDir,.*/",
+          "command": "ring.revealInExplorer"
         },
         {
           "when": "view == runnables && viewItem =~ /.*,uri,.*/",

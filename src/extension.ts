@@ -156,14 +156,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'ring.revealInOs',
+      'ring.openDirInOs',
       async (ctx: model.RunnableNode) => {
-        async function revealInOs(r: model.IRunnableInfo) {
+        async function openDirInOs(r: model.IRunnableInfo) {
           try {
             const workDir = r.Details[detailsKeys.workDirKey] as string;
 
             if (workDir) {
-              console.log(vscode.Uri.file(workDir));
               await vscode.env.openExternal(vscode.Uri.file(workDir));
             }
           } catch (error) {
@@ -174,7 +173,35 @@ export async function activate(context: vscode.ExtensionContext) {
             );
           }
         }
-        await contextOrFromPickList(revealInOs, ctx);
+        await contextOrFromPickList(openDirInOs, ctx);
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'ring.revealInExplorer',
+      async (ctx: model.RunnableNode) => {
+        async function revealInExplorer(r: model.IRunnableInfo) {
+          try {
+            const workDir = r.Details[detailsKeys.workDirKey] as string;
+
+            if (workDir) {
+              await vscode.commands.executeCommand('workbench.view.explorer');
+              await vscode.commands.executeCommand(
+                'revealInExplorer',
+                vscode.Uri.file(workDir)
+              );
+            }
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : 'Unknown error';
+            vscode.window.showErrorMessage(
+              `Failed to reveal in explorer: ${message}`
+            );
+          }
+        }
+        await contextOrFromPickList(revealInExplorer, ctx);
       }
     )
   );
@@ -191,7 +218,8 @@ export async function activate(context: vscode.ExtensionContext) {
           if (workDir) {
             await vscode.commands.executeCommand(
               'vscode.openFolder',
-              vscode.Uri.file(workDir)
+              vscode.Uri.file(workDir),
+              { forceNewWindow: true }
             );
           }
         }
