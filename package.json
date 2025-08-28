@@ -2,7 +2,7 @@
   "name": "ring-vsce",
   "displayName": "ring",
   "description": "",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "icon": "media/ring.128.png",
   "publisher": "queil",
   "license": "Apache-2.0",
@@ -189,7 +189,7 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "yarn run esbuild-base --minify",
+    "vscode:prepublish": "yarn run compile",
     "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
     "esbuild": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node --sourcemap",
     "esbuild-watch": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node --sourcemap --watch",
