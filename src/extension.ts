@@ -16,10 +16,8 @@ export async function activate(context: vscode.ExtensionContext) {
   const runnablesViewName = 'runnables';
   const wsModel = new model.WorkspaceProvider(context);
   vscode.window.registerTreeDataProvider('runnables', wsModel);
-  const treeView = vscode.window.createTreeView(runnablesViewName, {
+  vscode.window.createTreeView(runnablesViewName, {
     treeDataProvider: wsModel,
-    canSelectMany: false,
-    showCollapseAll: true,
   });
   wsStatus.command = 'ring.showRingView';
   wsStatus.text = `$(heart)`;
@@ -65,22 +63,6 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'ring.unloadWorkspace',
       async () => await sendMessage(M.UNLOAD)
-    )
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      'ring.toggleRunnable',
-      async (ctx: model.RunnableNode) => {
-        async function toggle(r: model.IRunnableInfo) {
-          if (r.State === 'ZERO') {
-            await sendMessage(M.RUNNABLE_INCLUDE, r.Id);
-          } else {
-            await sendMessage(M.RUNNABLE_EXCLUDE, r.Id);
-          }
-        }
-        await contextOrFromPickList(toggle, ctx);
-      }
     )
   );
 
@@ -143,7 +125,6 @@ export async function activate(context: vscode.ExtensionContext) {
       await vscode.commands.executeCommand(
         'workbench.view.extension.ring-view'
       );
-      treeView.reveal(wsModel.current(), { focus: true, select: true });
     })
   );
 
@@ -298,23 +279,13 @@ export async function activate(context: vscode.ExtensionContext) {
       'ring.runTask',
       async (ctx: model.RunnableNode) => {
         async function browseTo(r: model.IRunnableInfo) {
-          const friendlyName = r.Details[detailsKeys.friendlyName] || r.Id;
-          const quickPickItems = r.Tasks.map((task) => ({
-            label: task,
-            description: '',
-          }));
-
-          const selected = await vscode.window.showQuickPick(quickPickItems, {
-            placeHolder: `Select a task to run on ${friendlyName}`,
-          });
-
-          if (!selected) {
+          const id = await vscode.window.showQuickPick(r.Tasks);
+          if (!id) {
             return;
           }
-
           await sendMessage(
             M.RUNNABLE_EXECUTE_TASK,
-            JSON.stringify({ RunnableId: r.Id, TaskId: selected.label })
+            JSON.stringify({ RunnableId: r.Id, TaskId: id })
           );
         }
 
