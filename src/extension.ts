@@ -16,7 +16,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const runnablesViewName = 'runnables';
   const wsModel = new model.WorkspaceProvider(context);
   vscode.window.registerTreeDataProvider('runnables', wsModel);
-  vscode.window.createTreeView(runnablesViewName, {
+  const runnablesTreeView = vscode.window.createTreeView(runnablesViewName, {
     treeDataProvider: wsModel,
   });
   wsStatus.command = 'ring.showRingView';
@@ -278,6 +278,14 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'ring.runTask',
       async (ctx: model.RunnableNode) => {
+        // If no context provided (e.g., from keybinding), try to get selected item
+        if (!ctx) {
+          const selection = runnablesTreeView.selection;
+          if (selection && selection.length > 0) {
+            ctx = selection[0];
+          }
+        }
+
         async function browseTo(r: model.IRunnableInfo) {
           const id = await vscode.window.showQuickPick(r.Tasks);
           if (!id) {
