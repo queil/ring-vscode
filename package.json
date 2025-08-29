@@ -123,6 +123,11 @@
       {
         "command": "ring.sync",
         "key": "CTRL+R CTRL+R"
+      },
+      {
+        "command": "ring.runTask",
+        "key": "t",
+        "when": "view == runnables && viewItem != ring.workspace"
       }
     ],
     "viewsContainers": {
