@@ -127,7 +127,7 @@
       {
         "command": "ring.runTask",
         "key": "t",
-        "when": "view == runnables && viewItem != ring.workspace"
+        "when": "focusedView == runnables && listHasSelectionOrFocus"
       }
     ],
     "viewsContainers": {
