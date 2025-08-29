@@ -56,52 +56,63 @@
       },
       {
         "command": "ring.startRunnable",
-        "title": "Ring: Runnable - Start"
+        "title": "Start",
+        "when": "false"
       },
       {
         "command": "ring.stopRunnable",
-        "title": "Ring: Runnable - Stop"
+        "title": "Stop",
+        "when": "false"
       },
       {
         "command": "ring.restartRunnable",
-        "title": "Ring: Runnable - Restart"
+        "title": "Restart",
+        "when": "false"
       },
       {
         "command": "ring.revealContainingWorkspace",
-        "title": "Ring: Runnable - Open containing workspace"
+        "title": "Open containing workspace",
+        "when": "false"
       },
       {
         "command": "ring.openDirInOs",
-        "title": "Ring: Runnable - Open dir in OS"
+        "title": "Open dir in OS",
+        "when": "false"
       },
       {
         "command": "ring.revealInExplorer",
-        "title": "Ring: Runnable - Reveal in Explorer"
+        "title": "Reveal in Explorer",
+        "when": "false"
       },
       {
         "command": "ring.browseRunnable",
-        "title": "Ring: Runnable - Browse"
+        "title": "Browse",
+        "when": "false"
       },
       {
         "command": "ring.openFolder",
-        "title": "Ring: Runnable - Open dir in new window"
+        "title": "Open dir in new window",
+        "when": "false"
       },
       {
         "command": "ring.openTerminal",
-        "title": "Ring: Runnable - Open Terminal"
+        "title": "Open Terminal",
+        "when": "false"
       },
       {
         "command": "ring.pickRunnablePid",
-        "title": "Ring: Runnable - Pick PID"
+        "title": "Pick PID",
+        "when": "false"
       },
       {
         "command": "ring.runTask",
-        "title": "Ring: Run Task"
+        "title": "Run Task",
+        "when": "false"
       },
       {
         "command": "ring.debugRunnable",
-        "title": "Ring: Runnable - Debug ",
-        "enablement": "view == runnables"
+        "title": "Debug",
+        "when": "false"
       }
     ],
     "keybindings": [
