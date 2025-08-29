@@ -169,8 +169,4 @@ export class WorkspaceProvider implements vscode.TreeDataProvider<RingNode> {
   current() {
     return this.root.workspaceInfo;
   }
-
-  currentNode() {
-    return this.root;
-  }
 }

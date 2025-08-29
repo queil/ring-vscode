@@ -143,7 +143,7 @@ export async function activate(context: vscode.ExtensionContext) {
       await vscode.commands.executeCommand(
         'workbench.view.extension.ring-view'
       );
-      treeView.reveal(wsModel.currentNode(), { focus: true, select: true });
+      treeView.reveal(wsModel.current(), { focus: true, select: true });
     })
   );
 
