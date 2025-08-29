@@ -36,19 +36,23 @@
       },
       {
         "command": "ring.stopWorkspace",
-        "title": "Ring: Workspace - Stop"
+        "title": "Stop",
+        "when": "false"
       },
       {
         "command": "ring.startWorkspace",
-        "title": "Ring: Workspace - Start"
+        "title": "Start",
+        "when": "false"
       },
       {
         "command": "ring.unloadWorkspace",
-        "title": "Ring: Workspace - Unload"
+        "title": "Unload",
+        "when": "false"
       },
       {
         "command": "ring.applyWorkspaceFlavour",
-        "title": "Ring: Workspace - Apply flavour"
+        "title": "Apply flavour",
+        "when": "false"
       },
       {
         "command": "ring.sync",
@@ -141,19 +145,35 @@
     "menus": {
       "view/item/context": [
         {
-          "when": "view == runnables",
+          "when": "view == runnables && viewItem == ring.workspace",
+          "command": "ring.startWorkspace"
+        },
+        {
+          "when": "view == runnables && viewItem == ring.workspace",
+          "command": "ring.stopWorkspace"
+        },
+        {
+          "when": "view == runnables && viewItem == ring.workspace",
+          "command": "ring.unloadWorkspace"
+        },
+        {
+          "when": "view == runnables && viewItem == ring.workspace",
+          "command": "ring.applyWorkspaceFlavour"
+        },
+        {
+          "when": "view == runnables && viewItem != ring.workspace",
           "command": "ring.restartRunnable"
         },
         {
-          "when": "view == runnables",
+          "when": "view == runnables && viewItem != ring.workspace",
           "command": "ring.stopRunnable"
         },
         {
-          "when": "view == runnables",
+          "when": "view == runnables && viewItem != ring.workspace",
           "command": "ring.startRunnable"
         },
         {
-          "when": "view == runnables",
+          "when": "view == runnables && viewItem != ring.workspace",
           "command": "ring.revealContainingWorkspace"
         },
         {
@@ -177,7 +197,7 @@
           "command": "ring.openTerminal"
         },
         {
-          "when": "view == runnables",
+          "when": "view == runnables && viewItem != ring.workspace",
           "command": "ring.runTask"
         },
         {
