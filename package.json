@@ -36,12 +36,14 @@
       },
       {
         "command": "ring.stopWorkspace",
-        "title": "Stop",
+        "title": "Stop Workspace",
+        "icon": "$(debug-stop)",
         "when": "false"
       },
       {
         "command": "ring.startWorkspace",
-        "title": "Start",
+        "title": "Start Workspace",
+        "icon": "$(debug-start)",
         "when": "false"
       },
       {
@@ -59,18 +61,31 @@
         "title": "Ring: Sync"
       },
       {
+        "command": "ring.showRingView",
+        "title": "Ring: Show Runnables View"
+      },
+      {
+        "command": "ring.toggleRunnable",
+        "title": "Toggle Runnable",
+        "icon": "$(debug-pause)",
+        "when": "false"
+      },
+      {
         "command": "ring.startRunnable",
-        "title": "Start",
+        "title": "Start Runnable",
+        "icon": "$(debug-start)",
         "when": "false"
       },
       {
         "command": "ring.stopRunnable",
-        "title": "Stop",
+        "title": "Stop Runnable",
+        "icon": "$(debug-stop)",
         "when": "false"
       },
       {
         "command": "ring.restartRunnable",
-        "title": "Restart",
+        "title": "Restart Runnable",
+        "icon": "$(debug-restart)",
         "when": "false"
       },
       {
@@ -101,6 +116,7 @@
       {
         "command": "ring.openTerminal",
         "title": "Open Terminal",
+        "icon": "$(terminal)",
         "when": "false"
       },
       {
@@ -111,6 +127,7 @@
       {
         "command": "ring.runTask",
         "title": "Run Task",
+        "icon": "$(run)",
         "when": "false"
       },
       {
@@ -123,6 +140,36 @@
       {
         "command": "ring.sync",
         "key": "CTRL+R CTRL+R"
+      },
+      {
+        "command": "ring.toggleRunnable",
+        "key": "space",
+        "when": "focusedView == runnables && viewItem != ring.workspace"
+      },
+      {
+        "command": "ring.restartRunnable",
+        "key": "ctrl+shift+r",
+        "when": "focusedView == runnables && viewItem != ring.workspace"
+      },
+      {
+        "command": "ring.runTask",
+        "key": "t",
+        "when": "focusedView == runnables && viewItem != ring.workspace"
+      },
+      {
+        "command": "ring.openTerminal",
+        "key": "ctrl+`",
+        "when": "focusedView == runnables && viewItem =~ /.*,workDir,.*/"
+      },
+      {
+        "command": "ring.browseRunnable",
+        "key": "b",
+        "when": "focusedView == runnables && viewItem =~ /.*,uri,.*/"
+      },
+      {
+        "command": "ring.startWorkspace",
+        "key": "space",
+        "when": "focusedView == runnables && viewItem == ring.workspace"
       }
     ],
     "viewsContainers": {
@@ -162,15 +209,13 @@
         },
         {
           "when": "view == runnables && viewItem != ring.workspace",
-          "command": "ring.restartRunnable"
+          "command": "ring.toggleRunnable",
+          "group": "1_control@1"
         },
         {
           "when": "view == runnables && viewItem != ring.workspace",
-          "command": "ring.stopRunnable"
-        },
-        {
-          "when": "view == runnables && viewItem != ring.workspace",
-          "command": "ring.startRunnable"
+          "command": "ring.restartRunnable",
+          "group": "1_control@2"
         },
         {
           "when": "view == runnables && viewItem != ring.workspace",
@@ -203,6 +248,116 @@
         {
           "when": "view == runnables && false",
           "command": "ring.debugRunnable"
+        }
+      ],
+      "view/item/inline": [
+        {
+          "command": "ring.toggleRunnable",
+          "when": "view == runnables && viewItem != ring.workspace",
+          "group": "inline@1"
+        },
+        {
+          "command": "ring.restartRunnable",
+          "when": "view == runnables && viewItem != ring.workspace",
+          "group": "inline@2"
+        },
+        {
+          "command": "ring.runTask",
+          "when": "view == runnables && viewItem != ring.workspace",
+          "group": "inline@4"
+        },
+        {
+          "command": "ring.openTerminal",
+          "when": "view == runnables && viewItem =~ /.*,workDir,.*/",
+          "group": "inline@5"
+        },
+        {
+          "command": "ring.startWorkspace",
+          "when": "view == runnables && viewItem == ring.workspace",
+          "group": "inline@1"
+        },
+        {
+          "command": "ring.stopWorkspace",
+          "when": "view == runnables && viewItem == ring.workspace",
+          "group": "inline@2"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "ring.sync",
+          "when": "view == runnables",
+          "group": "navigation"
+        },
+        {
+          "command": "ring.loadStartWorkspace",
+          "when": "view == runnables",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "ring.startRunnable",
+          "when": "false"
+        },
+        {
+          "command": "ring.stopRunnable",
+          "when": "false"
+        },
+        {
+          "command": "ring.restartRunnable",
+          "when": "false"
+        },
+        {
+          "command": "ring.startWorkspace",
+          "when": "false"
+        },
+        {
+          "command": "ring.stopWorkspace",
+          "when": "false"
+        },
+        {
+          "command": "ring.unloadWorkspace",
+          "when": "false"
+        },
+        {
+          "command": "ring.applyWorkspaceFlavour",
+          "when": "false"
+        },
+        {
+          "command": "ring.revealContainingWorkspace",
+          "when": "false"
+        },
+        {
+          "command": "ring.openDirInOs",
+          "when": "false"
+        },
+        {
+          "command": "ring.revealInExplorer",
+          "when": "false"
+        },
+        {
+          "command": "ring.browseRunnable",
+          "when": "false"
+        },
+        {
+          "command": "ring.openFolder",
+          "when": "false"
+        },
+        {
+          "command": "ring.openTerminal",
+          "when": "false"
+        },
+        {
+          "command": "ring.runTask",
+          "when": "false"
+        },
+        {
+          "command": "ring.debugRunnable",
+          "when": "false"
+        },
+        {
+          "command": "ring.pickRunnablePid",
+          "when": "false"
         }
       ]
     },
