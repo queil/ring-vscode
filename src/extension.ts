@@ -14,7 +14,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const runnablesViewName = 'runnables';
   const wsModel = new model.WorkspaceProvider(context);
   vscode.window.registerTreeDataProvider('runnables', wsModel);
-  vscode.window.createTreeView(runnablesViewName, {
+  const runnablesTreeView = vscode.window.createTreeView(runnablesViewName, {
     treeDataProvider: wsModel,
   });
   wsStatus.command = 'ring.showRingView';
@@ -30,7 +30,7 @@ export async function activate(context: vscode.ExtensionContext) {
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'ring.loadStartWorkspace',
+      'ring.launchWorkspace',
       async () => await loadWorkspace()
     )
   );
@@ -70,6 +70,43 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
       }
       await sendMessage(M.WORKSPACE_APPLY_FLAVOUR, id);
+    })
+  );
+
+  //////////////////////
+  ///
+  /// RUNNABLE COMANDS
+  ///
+  ///////////////////////
+
+  async function showContextMenuForItem(item: model.RunnableNode) {
+    const actions = [];
+
+    for (const [_, task] of item.runnable.Tasks.entries()) {
+      actions.push({
+        label: `Task: ${task}`,
+        action: () =>
+          vscode.commands.executeCommand('ring.runTask', [item, task]),
+      });
+    }
+
+    const selected = await vscode.window.showQuickPick(
+      actions.map((a) => a.label),
+      { placeHolder: `Actions for ${item.label}` }
+    );
+
+    if (selected) {
+      const action = actions.find((a) => a.label === selected);
+      action?.action();
+    }
+  }
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('ring.selectTreeItem', async () => {
+      await vscode.commands.executeCommand('list.select');
+      await showContextMenuForItem(
+        runnablesTreeView.selection[0] as model.RunnableNode
+      );
     })
   );
 
@@ -173,32 +210,41 @@ export async function activate(context: vscode.ExtensionContext) {
     )
   );
 
+  async function revealInExplorer(r: model.IRunnableInfo) {
+    try {
+      const workDir = r.Details[detailsKeys.workDirKey] as string;
+
+      if (workDir) {
+        await vscode.commands.executeCommand('workbench.view.explorer');
+        await vscode.commands.executeCommand(
+          'revealInExplorer',
+          vscode.Uri.file(workDir)
+        );
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      vscode.window.showErrorMessage(
+        `Failed to reveal in explorer: ${message}`
+      );
+    }
+  }
+
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'ring.revealInExplorer',
-      async (ctx: model.RunnableNode) => {
-        async function revealInExplorer(r: model.IRunnableInfo) {
-          try {
-            const workDir = r.Details[detailsKeys.workDirKey] as string;
-
-            if (workDir) {
-              await vscode.commands.executeCommand('workbench.view.explorer');
-              await vscode.commands.executeCommand(
-                'revealInExplorer',
-                vscode.Uri.file(workDir)
-              );
-            }
-          } catch (error) {
-            const message =
-              error instanceof Error ? error.message : 'Unknown error';
-            vscode.window.showErrorMessage(
-              `Failed to reveal in explorer: ${message}`
-            );
-          }
-        }
-        await contextOrFromPickList(revealInExplorer, ctx);
-      }
+      async (ctx: model.RunnableNode) =>
+        await contextOrFromPickList(revealInExplorer, ctx)
     )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('ring.revealInExplorerV', async () => {
+      await vscode.commands.executeCommand('list.select');
+      await contextOrFromPickList(
+        revealInExplorer,
+        runnablesTreeView.selection[0] as model.RunnableNode
+      );
+    })
   );
 
   context.subscriptions.push(
@@ -272,9 +318,10 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'ring.runTask',
-      async (ctx: model.RunnableNode) => {
+      async (ctx: [model.RunnableNode, string | undefined]) => {
+        let [r, taskId] = ctx;
         async function browseTo(r: model.IRunnableInfo) {
-          const id = await vscode.window.showQuickPick(r.Tasks);
+          const id = taskId ?? (await vscode.window.showQuickPick(r.Tasks));
           if (!id) {
             return;
           }
@@ -284,7 +331,7 @@ export async function activate(context: vscode.ExtensionContext) {
           );
         }
 
-        await contextOrFromPickList(browseTo, ctx);
+        await contextOrFromPickList(browseTo, r);
       }
     )
   );
