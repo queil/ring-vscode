@@ -106,6 +106,7 @@ export async function activate(context: vscode.ExtensionContext) {
       async (ctx: model.RunnableNode) => {
         async function restart(r: model.IRunnableInfo) {
           await sendMessage(M.RUNNABLE_EXCLUDE, r.Id);
+          await new Promise(resolve => setTimeout(resolve, 1000));
           await sendMessage(M.RUNNABLE_INCLUDE, r.Id);
         }
 
@@ -119,6 +120,7 @@ export async function activate(context: vscode.ExtensionContext) {
       await vscode.commands.executeCommand(
         'workbench.view.extension.ring-view'
       );
+      await vscode.commands.executeCommand('runnables.focus');
     })
   );
 
@@ -272,7 +274,6 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'ring.runTask',
       async (ctx: model.RunnableNode) => {
-
         async function browseTo(r: model.IRunnableInfo) {
           const id = await vscode.window.showQuickPick(r.Tasks);
           if (!id) {
