@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-//import * as cp from 'child_process';
 import WebSocket from 'ws';
 import * as model from './workspaceNodeProvider';
 import { Guid } from 'guid-typescript';
@@ -106,7 +105,7 @@ export async function activate(context: vscode.ExtensionContext) {
       async (ctx: model.RunnableNode) => {
         async function restart(r: model.IRunnableInfo) {
           await sendMessage(M.RUNNABLE_EXCLUDE, r.Id);
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           await sendMessage(M.RUNNABLE_INCLUDE, r.Id);
         }
 
