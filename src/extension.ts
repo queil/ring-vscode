@@ -85,10 +85,30 @@ export async function activate(context: vscode.ExtensionContext) {
     for (const [_, task] of item.runnable.Tasks.entries()) {
       actions.push({
         label: `Task: ${task}`,
-        action: () =>
-          vscode.commands.executeCommand('ring.runTask', [item, task]),
+        action: async () =>
+          await vscode.commands.executeCommand('ring.runTask', [item, task]),
       });
     }
+
+    actions.push({
+      label: 'Attach to process',
+      action: async () => {
+        const config = {
+          type:
+            item.runnable.Type === 'AspNetCore'
+              ? 'coreclr'
+              : item.runnable.Type,
+          request: 'attach',
+          name: 'Attach',
+          processId: item.runnable.Details['processId'],
+        };
+
+        await vscode.debug.startDebugging(
+          vscode.workspace.workspaceFolders?.[0],
+          config
+        );
+      },
+    });
 
     const selected = await vscode.window.showQuickPick(
       actions.map((a) => a.label),
@@ -97,7 +117,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     if (selected) {
       const action = actions.find((a) => a.label === selected);
-      action?.action();
+      await action?.action();
     }
   }
 
@@ -336,12 +356,6 @@ export async function activate(context: vscode.ExtensionContext) {
     )
   );
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand('ring.pickRunnablePid', async () => {
-      return await pickRunnablePid();
-    })
-  );
-
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   //
   // Functions
@@ -368,29 +382,6 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     } else {
       await action(ctx.runnable);
-    }
-  }
-
-  async function pickRunnablePid() {
-    const pidKey = 'processId';
-    const fs = vscode.workspace.workspaceFolders;
-    let pid = 0;
-
-    if (fs && fs.length === 1) {
-      const r = wsModel.getRunnable(fs[0].name);
-
-      if (r) {
-        pid = r.runnable.Details[pidKey];
-        return `${pid}`;
-      }
-    }
-
-    await contextOrFromPickList(async (r) => {
-      pid = r.Details[pidKey] as number;
-    });
-
-    if (pid && pid > 0) {
-      return `${pid}`;
     }
   }
 
