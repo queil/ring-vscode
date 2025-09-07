@@ -1,9 +1,7 @@
 import * as vscode from 'vscode';
-//import * as cp from 'child_process';
 import WebSocket from 'ws';
 import * as model from './workspaceNodeProvider';
 import { Guid } from 'guid-typescript';
-import { NetDebugConfigProvider } from './netDebugConfigProvider';
 import { detailsKeys } from './detailsKeys';
 
 let globalSocket: WebSocket;
@@ -16,19 +14,14 @@ export async function activate(context: vscode.ExtensionContext) {
   const runnablesViewName = 'runnables';
   const wsModel = new model.WorkspaceProvider(context);
   vscode.window.registerTreeDataProvider('runnables', wsModel);
-  vscode.window.createTreeView(runnablesViewName, {
+  const runnablesTreeView = vscode.window.createTreeView(runnablesViewName, {
     treeDataProvider: wsModel,
   });
   wsStatus.command = 'ring.showRingView';
-  wsStatus.text = `$(heart)`;
+  wsStatus.text = `$(circle-large)`;
   wsStatus.color = '#000000';
   wsStatus.tooltip = 'DISCONNECTED';
   wsStatus.show();
-
-  const provider = new NetDebugConfigProvider(wsModel);
-  context.subscriptions.push(
-    vscode.debug.registerDebugConfigurationProvider('ring', provider)
-  );
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   //
@@ -37,7 +30,7 @@ export async function activate(context: vscode.ExtensionContext) {
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'ring.loadStartWorkspace',
+      'ring.launchWorkspace',
       async () => await loadWorkspace()
     )
   );
@@ -80,6 +73,63 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
+  //////////////////////
+  ///
+  /// RUNNABLE COMANDS
+  ///
+  ///////////////////////
+
+  async function showContextMenuForItem(item: model.RunnableNode) {
+    const actions = [];
+
+    for (const [_, task] of item.runnable.Tasks.entries()) {
+      actions.push({
+        label: `Task: ${task}`,
+        action: async () =>
+          await vscode.commands.executeCommand('ring.runTask', [item, task]),
+      });
+    }
+
+    actions.push({
+      label: 'Attach to process',
+      action: async () => {
+        const config = {
+          type:
+            item.runnable.Type === 'AspNetCore'
+              ? 'coreclr'
+              : item.runnable.Type,
+          request: 'attach',
+          name: 'Attach',
+          processId: item.runnable.Details['processId'],
+        };
+
+        await vscode.debug.startDebugging(
+          vscode.workspace.workspaceFolders?.[0],
+          config
+        );
+      },
+    });
+
+    const selected = await vscode.window.showQuickPick(
+      actions.map((a) => a.label),
+      { placeHolder: `Actions for ${item.label}` }
+    );
+
+    if (selected) {
+      const action = actions.find((a) => a.label === selected);
+      await action?.action();
+    }
+  }
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('ring.selectTreeItem', async () => {
+      await vscode.commands.executeCommand('list.select');
+      await showContextMenuForItem(
+        runnablesTreeView.selection[0] as model.RunnableNode
+      );
+    })
+  );
+
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'ring.startRunnable',
@@ -112,6 +162,7 @@ export async function activate(context: vscode.ExtensionContext) {
       async (ctx: model.RunnableNode) => {
         async function restart(r: model.IRunnableInfo) {
           await sendMessage(M.RUNNABLE_EXCLUDE, r.Id);
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           await sendMessage(M.RUNNABLE_INCLUDE, r.Id);
         }
 
@@ -125,6 +176,7 @@ export async function activate(context: vscode.ExtensionContext) {
       await vscode.commands.executeCommand(
         'workbench.view.extension.ring-view'
       );
+      await vscode.commands.executeCommand('runnables.focus');
     })
   );
 
@@ -178,32 +230,41 @@ export async function activate(context: vscode.ExtensionContext) {
     )
   );
 
+  async function revealInExplorer(r: model.IRunnableInfo) {
+    try {
+      const workDir = r.Details[detailsKeys.workDirKey] as string;
+
+      if (workDir) {
+        await vscode.commands.executeCommand('workbench.view.explorer');
+        await vscode.commands.executeCommand(
+          'revealInExplorer',
+          vscode.Uri.file(workDir)
+        );
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      vscode.window.showErrorMessage(
+        `Failed to reveal in explorer: ${message}`
+      );
+    }
+  }
+
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'ring.revealInExplorer',
-      async (ctx: model.RunnableNode) => {
-        async function revealInExplorer(r: model.IRunnableInfo) {
-          try {
-            const workDir = r.Details[detailsKeys.workDirKey] as string;
-
-            if (workDir) {
-              await vscode.commands.executeCommand('workbench.view.explorer');
-              await vscode.commands.executeCommand(
-                'revealInExplorer',
-                vscode.Uri.file(workDir)
-              );
-            }
-          } catch (error) {
-            const message =
-              error instanceof Error ? error.message : 'Unknown error';
-            vscode.window.showErrorMessage(
-              `Failed to reveal in explorer: ${message}`
-            );
-          }
-        }
-        await contextOrFromPickList(revealInExplorer, ctx);
-      }
+      async (ctx: model.RunnableNode) =>
+        await contextOrFromPickList(revealInExplorer, ctx)
     )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('ring.revealInExplorerV', async () => {
+      await vscode.commands.executeCommand('list.select');
+      await contextOrFromPickList(
+        revealInExplorer,
+        runnablesTreeView.selection[0] as model.RunnableNode
+      );
+    })
   );
 
   context.subscriptions.push(
@@ -277,9 +338,10 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'ring.runTask',
-      async (ctx: model.RunnableNode) => {
+      async (ctx: [model.RunnableNode, string | undefined]) => {
+        let [r, taskId] = ctx;
         async function browseTo(r: model.IRunnableInfo) {
-          const id = await vscode.window.showQuickPick(r.Tasks);
+          const id = taskId ?? (await vscode.window.showQuickPick(r.Tasks));
           if (!id) {
             return;
           }
@@ -289,98 +351,10 @@ export async function activate(context: vscode.ExtensionContext) {
           );
         }
 
-        await contextOrFromPickList(browseTo, ctx);
+        await contextOrFromPickList(browseTo, r);
       }
     )
   );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      'ring.debugRunnable',
-      async (ctx: model.RunnableNode) => {
-        const folders = vscode.workspace.workspaceFolders;
-
-        const runnableFolderNotOpened =
-          "The runnable's folder is not open in VS Code";
-
-        if (!folders) {
-          vscode.window.showInformationMessage(runnableFolderNotOpened);
-          return;
-        }
-
-        const folder = folders.find((f) => f.name === ctx.runnable.Id);
-
-        if (!folder) {
-          vscode.window.showInformationMessage(runnableFolderNotOpened);
-          return;
-        }
-        const cfg = getConfiguration(ctx.runnable);
-        if (cfg) {
-          vscode.debug.startDebugging(folder, cfg);
-        } else {
-          vscode.window.showInformationMessage(
-            `Could not resolve debug configuration for runnable type '${ctx.runnable.Type}'`
-          );
-        }
-      }
-    )
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand('ring.pickRunnablePid', async () => {
-      return await pickRunnablePid();
-    })
-  );
-
-  vscode.tasks.onDidStartTask(async (e) => {
-    const task = e.execution.task;
-
-    switch (task.name) {
-      case 'build': {
-        let folder = <vscode.WorkspaceFolder>task.scope;
-        if (folder) {
-          await sendMessage(M.RUNNABLE_EXCLUDE, folder.name);
-        }
-
-        break;
-      }
-      default:
-        break;
-    }
-  });
-
-  vscode.tasks.onDidEndTask(async (e) => {
-    const task = e.execution.task;
-
-    switch (task.name) {
-      case 'build': {
-        let folder = <vscode.WorkspaceFolder>task.scope;
-        if (folder) {
-          await sendMessage(M.RUNNABLE_INCLUDE, folder.name);
-        }
-
-        break;
-      }
-      default:
-        break;
-    }
-  });
-
-  vscode.debug.onDidStartDebugSession(async (e) => {
-    // const folder = e.workspaceFolder;
-    // if (folder)
-    // {
-    //  await sendMessage(M.RUNNABLE_EXCLUDE, folder.name);
-    // }
-  });
-
-  vscode.debug.onDidTerminateDebugSession(async (e) => {
-    // const folder = e.workspaceFolder;
-    // if (folder)
-    // {
-    //  await sendMessage(M.RUNNABLE_INCLUDE, folder.name);
-    // }
-  });
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   //
@@ -411,29 +385,6 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   }
 
-  async function pickRunnablePid() {
-    const pidKey = 'processId';
-    const fs = vscode.workspace.workspaceFolders;
-    let pid = 0;
-
-    if (fs && fs.length === 1) {
-      const r = wsModel.getRunnable(fs[0].name);
-
-      if (r) {
-        pid = r.runnable.Details[pidKey];
-        return `${pid}`;
-      }
-    }
-
-    await contextOrFromPickList(async (r) => {
-      pid = r.Details[pidKey] as number;
-    });
-
-    if (pid && pid > 0) {
-      return `${pid}`;
-    }
-  }
-
   async function loadWorkspace() {
     const uris = await vscode.window.showOpenDialog({
       canSelectMany: false,
@@ -461,7 +412,26 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   async function sendMessage(message: M, payload?: string) {
+    wsStatus.color = '#00e8f0ff';
+    setTimeout(() => {
+      showWorkspaceStatus();
+    }, 500);
     globalSocket.send(String.fromCharCode(message) + payload);
+  }
+
+  async function showWorkspaceStatus() {
+    const healthy = '#00c500ff';
+    const degraded = '#e77b00ff';
+    const stopped = '#292525ff';
+
+    wsStatus.color =
+      wsModel.current().WorkspaceState === 'HEALTHY'
+        ? healthy
+        : wsModel.current().WorkspaceState === 'DEGRADED'
+          ? degraded
+          : stopped;
+
+    wsStatus.tooltip = wsModel.current().WorkspaceState.toString();
   }
 
   async function dispatch(message: M, payload: Buffer) {
@@ -505,27 +475,12 @@ export async function activate(context: vscode.ExtensionContext) {
           <model.IWorkspaceInfo>JSON.parse(payload.toString())
         );
 
-        const healthy = '#00dd00';
-        const degraded = '#ff8800';
-        const stopped = '#888888';
-
-        wsStatus.color =
-          wsModel.current().WorkspaceState === 'HEALTHY'
-            ? healthy
-            : wsModel.current().WorkspaceState === 'DEGRADED'
-              ? degraded
-              : stopped;
-
-        wsStatus.tooltip = wsModel.current().WorkspaceState.toString();
+        showWorkspaceStatus();
 
         break;
       case M.RUNNABLE_UNRECOVERABLE: {
         const runnableId = payload.toString();
         wsModel.updateRunnable(runnableId, 'DEAD');
-        vscode.window.showWarningMessage(
-          `Runnable dead: ${runnableId}`,
-          'Restart'
-        );
         break;
       }
       case M.RUNNABLE_STARTED: {
@@ -560,9 +515,10 @@ export async function activate(context: vscode.ExtensionContext) {
         break;
       }
       case M.ACK:
-        const b = payload[0];
-        const ack = Ack[b];
-        vscode.window.showInformationMessage(`ACK: ${ack}`);
+        wsStatus.color = '#0097a8ff';
+        setTimeout(() => {
+          showWorkspaceStatus();
+        }, 500);
       default:
         break;
     }
@@ -591,7 +547,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
       globalSocket.onmessage = async (e) => {
         let msg = <Buffer>e.data;
-        await dispatch(msg[0], msg.slice(1));
+        await dispatch(msg[0], msg.subarray(1));
+        wsModel.updateWorkspace(undefined);
       };
 
       globalSocket.onopen = (e) => {
@@ -619,31 +576,6 @@ export async function activate(context: vscode.ExtensionContext) {
 export function deactivate() {
   if (globalSocket !== undefined) {
     globalSocket.terminate();
-  }
-}
-
-export function getConfiguration(
-  runnable: model.IRunnableInfo
-): vscode.DebugConfiguration | undefined {
-  switch (runnable.Type.toLowerCase()) {
-    case 'netexe':
-    case 'iisexpress':
-      return {
-        type: 'clr',
-        request: 'attach',
-        name: '.NET Framework Attach (IIS Express)',
-        processId: '${command:ring.pickRunnablePid}',
-      };
-    case 'aspnetcore':
-      return {
-        name: '.NET Core Launch (console)',
-        type: 'coreclr',
-        request: 'attach',
-        processId: '${command:ring.pickRunnablePid}',
-      };
-
-    default:
-      return undefined;
   }
 }
 
