@@ -91,6 +91,12 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     actions.push({
+      label: `Restart`,
+      action: async () =>
+        await vscode.commands.executeCommand('ring.restartRunnable', item),
+    });
+
+    actions.push({
       label: 'Attach to process',
       action: async () => {
         const config = {
