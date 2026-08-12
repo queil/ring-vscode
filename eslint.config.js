@@ -45,7 +45,7 @@ module.exports = [
       '*.config.js',
       '.vscode-test/**',
       'node_modules/**',
-      '.yarn/**',
+      '.pnpm-store/**',
     ],
   },
 ];

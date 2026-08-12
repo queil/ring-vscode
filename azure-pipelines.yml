@@ -31,30 +31,26 @@ steps:
   - bash: |
       echo ">>> Compile vscode-test"
       corepack enable
-      yarn install
-      yarn compile
+      pnpm install --frozen-lockfile
+      pnpm compile
       echo ">>> Compiled vscode-test"
       cd sample
       echo ">>> Run sample integration test"
-      yarn install
-      yarn compile
-      NODE_OPTIONS="--no-deprecation" yarn test
+      pnpm install --frozen-lockfile
+      pnpm compile
+      NODE_OPTIONS="--no-deprecation" pnpm test
     displayName: Run Tests
     env:
       DISPLAY: ':99.0'
 
   - bash: |
-      echo ">>> Install @vscode/vsce"
-      yarn add -D @vscode/vsce
       echo ">>> Publish"
-      yarn run deploy -p $(VSCODE_MARKETPLACE_TOKEN)
+      pnpm run deploy -p $(VSCODE_MARKETPLACE_TOKEN)
     displayName: Publish
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(contains(variables['Build.SourceBranch'], '-')), eq(variables['Agent.OS'], 'Linux'))
 
   - bash: |
-      echo ">>> Install @vscode/vsce"
-      yarn add -D @vscode/vsce
       echo ">>> Publish pre-release"
-      yarn run deploy-prerelease -p $(VSCODE_MARKETPLACE_TOKEN)
+      pnpm run deploy-prerelease -p $(VSCODE_MARKETPLACE_TOKEN)
     displayName: Publish pre-release
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), contains(variables['Build.SourceBranch'], '-'), eq(variables['Agent.OS'], 'Linux'))
