@@ -101,9 +101,7 @@ export async function activate(context: vscode.ExtensionContext) {
       action: async () => {
         const config = {
           type:
-            item.runnable.Type === 'AspNetCore'
-              ? 'coreclr'
-              : item.runnable.Type,
+            item.runnable.Type === 'dotnet' ? 'coreclr' : item.runnable.Type,
           request: 'attach',
           name: 'Attach',
           processId: item.runnable.Details['processId'],

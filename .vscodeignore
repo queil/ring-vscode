@@ -9,13 +9,9 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 node_modules/**
-!node_modules/bufferutil/**
-!node_modules/utf-8-validate/**
-!node_modules/ws/**
-!node_modules/guid-typescript/**
-!node_modules/minimist/**
-yarn.lock
-.yarn
+out/**
+pnpm-lock.yaml
+.npmrc
 .git/**
 azure-pipelines.yml
 eslint.config.js
@@ -24,4 +20,3 @@ eslint.config.js
 .devcontainer
 .prettierignore
 .rooz.yaml
-.yarnrc.yml
